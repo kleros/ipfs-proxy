@@ -1,0 +1,44 @@
+import os
+
+from flask import Flask, jsonify, request
+
+from ipfs import add_file
+
+app = Flask(__name__)
+TMP_FOLDER = './tmp'
+
+@app.route('/add', methods=['POST'])
+def add():
+    # check if the post request has the file part
+    requestJSON = request.json
+    if not requestJSON.get("buffer") or not requestJSON.get("fileName"):
+        return jsonify(error="Missing buffer and/or fileName in JSON body")
+
+    tmp_file_path = os.path.join(TMP_FOLDER, requestJSON["fileName"])
+
+    # temporarily write to disk. Slow, get a workaround in ipfs api to pass straight bytes. FIXME
+    newFile = open(tmp_file_path, "wb")
+    newFile.write(bytes(requestJSON["buffer"]["data"]))
+    newFile.close() # close to write all in memory data to disk
+
+    # add to ipfs
+    hash = add_file(tmp_file_path)
+    # remove tmp file
+    os.remove(tmp_file_path)
+
+    return jsonify(data=list(map(lambda x: {"path": ("/%s" % x["Name"]), "hash": x["Hash"]}, hash))), 201
+
+# CORS headers
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', "*")
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    if request.method == 'OPTIONS':
+        response.headers['Access-Control-Allow-Methods'] = 'POST'
+        headers = request.headers.get('Access-Control-Request-Headers')
+        if headers:
+            response.headers['Access-Control-Allow-Headers'] = headers
+    return response
+
+if __name__ == "__main__":
+    app.run(debug=True, threaded=True, host="0.0.0.0")

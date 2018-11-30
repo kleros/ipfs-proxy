@@ -1,0 +1,2 @@
+ipfsapi=0.4.3
+flask=1.0.2
