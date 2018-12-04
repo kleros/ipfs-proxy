@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, jsonify, request
 
-from ipfs import add_file
+from ipfs import add_file, cat_file
 
 app = Flask(__name__)
 TMP_FOLDER = './tmp'
@@ -27,6 +27,13 @@ def add():
     os.remove(tmp_file_path)
 
     return jsonify(data=list(map(lambda x: {"path": ("/%s" % x["Name"]), "hash": x["Hash"]}, hash))), 201
+
+@app.route('//ipfs/<path:path>', methods=['GET'])
+@app.route('/ipfs/<path:path>', methods=['GET'])
+def get(path):
+    resp = cat_file(path)
+    return (resp.content, resp.status_code, resp.headers.items())
+
 
 # CORS headers
 @app.after_request
