@@ -28,7 +28,6 @@ def add():
 
     return jsonify(data=list(map(lambda x: {"path": ("/%s" % x["Name"]), "hash": x["Hash"]}, hash))), 201
 
-@app.route('//ipfs/<path:path>', methods=['GET'])
 @app.route('/ipfs/<path:path>', methods=['GET'])
 def get(path):
     resp = cat_file(path)
@@ -38,8 +37,8 @@ def get(path):
 # CORS headers
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', "*")
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    if response.headers.get('Access-Control-Allow-Origin') is None:
+        response.headers.add('Access-Control-Allow-Origin', "*")
     if request.method == 'OPTIONS':
         response.headers['Access-Control-Allow-Methods'] = 'POST'
         headers = request.headers.get('Access-Control-Request-Headers')
