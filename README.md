@@ -14,8 +14,9 @@ IPFS api to the world we run this proxy in front to make the calls for us.
 
 ## Routes
 
-Add files to IPFS. By default it will pin the file and use a directory to preserve filename and extension.
-`/add <POST>`
+- Add files to IPFS. By default it will pin the file and use a directory to preserve filename and extension.
+
+`POST /add`
 
 Expects a JSON body that includes:
 ```
@@ -24,3 +25,15 @@ Expects a JSON body that includes:
   buffer: <[]int>
 }
 ```
+
+Returns:
+```
+[{
+  path: string,
+  hash: string
+}]
+```
+
+- Fetch a file from the node.
+
+`GET /ipfs/<path>`
