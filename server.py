@@ -23,6 +23,12 @@ def add():
 
     # add to ipfs
     hash = add_file(tmp_file_path)
+
+    try:
+        request.post('http://127.0.0.1:9094' + '/pins/' + hash["Hash"])
+    except:
+        pass
+
     # remove tmp file
     os.remove(tmp_file_path)
 
