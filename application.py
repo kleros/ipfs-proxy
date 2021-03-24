@@ -4,10 +4,15 @@ from flask import Flask, jsonify, request
 
 from ipfs import add_file, cat_file
 
-app = Flask(__name__)
-TMP_FOLDER = './tmp'
+application = Flask(__name__)
+TMP_FOLDER = '/tmp'
 
-@app.route('/add', methods=['POST'])
+@application.route('/health-check', methods=['GET'])
+@application.route('/', methods=['GET'])
+def health_check():
+    return jsonify({ 'status': 'OK' }), 200
+
+@application.route('/add', methods=['POST'])
 def add():
     # check if the post request has the file part
     requestJSON = request.json
@@ -24,24 +29,23 @@ def add():
     # add to ipfs
     hash = add_file(tmp_file_path)
 
-    try:
-        request.post('http://127.0.0.1:9094' + '/pins/' + hash["Hash"])
-    except:
-        pass
+    # try:
+    #     request.post('http://127.0.0.1:9094' + '/pins/' + hash["Hash"])
+    # except:
+    #     pass
 
     # remove tmp file
     os.remove(tmp_file_path)
 
     return jsonify(data=list(map(lambda x: {"path": ("/%s" % x["Name"]), "hash": x["Hash"]}, hash))), 201
 
-@app.route('/ipfs/<path:path>', methods=['GET'])
+@application.route('/ipfs/<path:path>', methods=['GET'])
 def get(path):
-    resp = cat_file(path)
-    return (resp.content, resp.status_code, resp.headers.items())
-
+    res = cat_file(path)
+    return (res.content, res.status_code, res.headers.items())
 
 # CORS headers
-@app.after_request
+@application.after_request
 def after_request(response):
     if response.headers.get('Access-Control-Allow-Origin') is None:
         response.headers.add('Access-Control-Allow-Origin', "*")
@@ -53,4 +57,5 @@ def after_request(response):
     return response
 
 if __name__ == "__main__":
-    app.run(debug=True, threaded=True, host="0.0.0.0")
+    port = os.getenv('PORT', 8000)
+    application.run(debug=True, threaded=True, port=port, host="0.0.0.0")
