@@ -50,7 +50,7 @@ def after_request(response):
     if response.headers.get('Access-Control-Allow-Origin') is None:
         response.headers.add('Access-Control-Allow-Origin', "*")
     if request.method == 'OPTIONS':
-        response.headers['Access-Control-Allow-Methods'] = 'POST'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,POST'
         headers = request.headers.get('Access-Control-Request-Headers')
         if headers:
             response.headers['Access-Control-Allow-Headers'] = headers
