@@ -1,11 +1,9 @@
 import os
-
 from flask import Flask, jsonify, request
-
+from tempfile import TemporaryDirectory
 from ipfs import add_file, cat_file
 
 application = Flask(__name__)
-TMP_FOLDER = '/tmp'
 
 @application.route('/health-check', methods=['GET'])
 @application.route('/', methods=['GET'])
@@ -19,23 +17,19 @@ def add():
     if not requestJSON.get("buffer") or not requestJSON.get("fileName"):
         return jsonify(error="Missing buffer and/or fileName in JSON body")
 
-    tmp_file_path = os.path.join(TMP_FOLDER, requestJSON["fileName"])
+    tmp_dir = TemporaryDirectory()
+    tmp_file_path = os.path.join(tmp_dir.name, requestJSON["fileName"])
 
     # temporarily write to disk. Slow, get a workaround in ipfs api to pass straight bytes. FIXME
-    newFile = open(tmp_file_path, "wb")
+    newFile = open(tmp_file_path, "wb+")
     newFile.write(bytes(requestJSON["buffer"]["data"]))
     newFile.close() # close to write all in memory data to disk
 
     # add to ipfs
     hash = add_file(tmp_file_path)
 
-    # try:
-    #     request.post('http://127.0.0.1:9094' + '/pins/' + hash["Hash"])
-    # except:
-    #     pass
-
     # remove tmp file
-    os.remove(tmp_file_path)
+    tmp_dir.cleanup()
 
     return jsonify(data=list(map(lambda x: {"path": ("/%s" % x["Name"]), "hash": x["Hash"]}, hash))), 201
 
