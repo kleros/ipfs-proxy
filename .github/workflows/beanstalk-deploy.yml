@@ -12,9 +12,9 @@ jobs:
         uses: actions/checkout@v1
 
       - uses: benjlevesque/short-sha@v1.2
-          id: short-sha
-          with:
-            length: 8
+        id: short-sha
+        with:
+          length: 8
 
       - name: Generate deployment package
         run: git archive --format=zip HEAD -o ipfs-proxy@${{ steps.short-sha.outputs.sha }}.zip
