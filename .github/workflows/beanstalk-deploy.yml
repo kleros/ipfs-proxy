@@ -1,0 +1,39 @@
+name: Deploy to Beanstalk
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v1
+
+      - name: Generate deployment package
+        run: git archive --format=zip HEAD -o ipfs-proxy@${{ github.sha }}.zip
+
+      - name: Deploy primary
+        uses: einaregilsson/beanstalk-deploy@v16
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ipfs-proxy
+          environment_name: ipfs-proxy-prod
+          region: us-east-2
+          version_label: ${{ github.sha }}-${{ github.event.head_commit.message }}
+          use_existing_version_if_available: true
+          deployment_package: ipfs-proxy@${{ github.sha }}.zip
+
+      - name: Deploy secondary
+        uses: einaregilsson/beanstalk-deploy@v16
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ipfs-proxy
+          environment_name: ipfs-proxy-prod-2
+          region: us-east-2
+          version_label: ${{ github.sha }}-${{ github.event.head_commit.message }}
+          use_existing_version_if_available: true
+          deployment_package: ipfs-proxy@${{ github.sha }}.zip
