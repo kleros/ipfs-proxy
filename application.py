@@ -2,6 +2,7 @@ import os
 from flask import Flask, jsonify, request
 from tempfile import TemporaryDirectory
 from ipfs import add_file, cat_file
+from requests.exceptions import ReadTimeout
 
 application = Flask(__name__)
 
@@ -35,8 +36,16 @@ def add():
 
 @application.route('/ipfs/<path:path>', methods=['GET'])
 def get(path):
-    res = cat_file(path)
-    return (res.content, res.status_code, res.headers.items())
+    try:
+        res = cat_file(path)
+        if (res.status_code in [400, 404]):
+            return jsonify({ 'error': res.content.decode('utf-8') }), res.status_code
+        else:
+            return res.content, res.status_code, res.headers.items()
+    except ReadTimeout:
+            return jsonify({ 'error': 'Gateway timeout' }), 504
+    except:
+            return jsonify({ 'error': 'Unknown error' }), 500
 
 # CORS headers
 @application.after_request
