@@ -1,4 +1,4 @@
-name: Deploy to Beanstalk
+name: Deploy to ElasticBeanstalk
 on:
   push:
     branches:
@@ -11,10 +11,9 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v1
 
-      - uses: benjlevesque/short-sha@v1.2
+      - name: Get short HEAD SHA
         id: short-sha
-        with:
-          length: 8
+        run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
 
       - name: Generate deployment package
         run: git archive --format=zip HEAD -o ipfs-proxy@${{ steps.short-sha.outputs.sha }}.zip
