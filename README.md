@@ -7,10 +7,8 @@ IPFS api to the world we run this proxy in front to make the calls for us.
 ## Quickstart
 
 - (Recommended) Install a `virtualenv` using Python 3.x.
-
 - `pip install -r requirements.txt`
-
-- python server.py
+- `python application.py`
 
 ## Routes
 
@@ -32,13 +30,18 @@ Expects a JSON body that includes:
 #### Response Body
 
 ```typescript
-[{
-  path: string,
-  hash: string,
-}, {
-  path: "/",
-  hash: string,
-}]
+{
+  data: [
+    {
+      path: string,
+      hash: string
+    }, 
+    {
+      path: "/",
+      hash: string
+    }
+  ]
+}
 ```
 
 ### `GET /ipfs/<path>`
