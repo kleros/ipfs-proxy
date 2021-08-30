@@ -35,7 +35,7 @@ Expects a JSON body that includes:
     {
       path: string,
       hash: string
-    }, 
+    },
     {
       path: "/",
       hash: string
@@ -51,4 +51,40 @@ Fetch a file from the node.
 #### Response Body
 
 The contents of the file.
+
+
+### `POST /add-zipped-directory` (experimental)
+
+Adds a zipped directory to IPFS. It will extract the zip file into a folder with the same name and upload it.
+
+#### Request Body
+
+Expects a `multipart/form-data` body with a `file` field:
+
+```typescript
+----FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="<filename>.zip"
+Content-Type: application/zip
+
+(data)
+----FormBoundary7MA4YWxkTrZu0gW
+```
+
+#### Response Body
+
+```typescript
+{
+  data: [
+    ...
+    {
+      path: string,
+      hash: string
+    },
+    {
+      path: "/",
+      hash: string
+    }
+  ]
+}
+```
 
